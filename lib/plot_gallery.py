@@ -1,3 +1,4 @@
+import math
 import matplotlib.pyplot as plt
 
 """ Create a "gallery" of items in a specified number of rows using MatPlotLib.
@@ -13,7 +14,7 @@ class PlotGallery:
 
   def open(self):
     # rcParams['figure.dpi'] = 300
-    fig, axes = plt.subplots(1, 4)
+    fig, axes = plt.subplots(self.rows(), self.columns)
     fig.suptitle(self.title)
 
     # Reudce vertical space after the title. This is magic to me at this point.
@@ -38,3 +39,6 @@ class PlotGallery:
     plt.show()
 
     # rcParams['figure.dpi'] = 72
+
+  def rows(self):
+    return math.ceil(len(self.exhibits) / self.columns)

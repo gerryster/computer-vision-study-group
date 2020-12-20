@@ -20,6 +20,8 @@ class TestPlotGallery:
     subject = plot_gallery.PlotGallery(title='foo')
     assert subject.columns == 1
 
+  # def test_that_columns_must_be_greater_than_0(self):
+
   def test_opening_a_single_exhibit(self, monkeypatch):
     class FigureDouble:
       def suptitle(self, title):
@@ -42,7 +44,14 @@ class TestPlotGallery:
     subject.add_exhibit(my_exhibit)
 
     simulator_fig = FigureDouble()
-    def mock_subplot_return(nrows, ncols):
+    found_nrows = None
+    found_ncols = None
+    def mock_subplot(nrows, ncols):
+      nonlocal found_nrows
+      nonlocal found_ncols
+      found_nrows = nrows
+      found_ncols = ncols
+
       return simulator_fig, [42, 43]
 
     found_adjust_top = None
@@ -54,7 +63,7 @@ class TestPlotGallery:
       found_adjust_top = top
 
     # Setup mocks:
-    monkeypatch.setattr(plt, "subplots", mock_subplot_return)
+    monkeypatch.setattr(plt, "subplots", mock_subplot)
     monkeypatch.setattr(plt, "subplots_adjust", mock_subplots_adjust)
 
     subject.open()
@@ -62,5 +71,5 @@ class TestPlotGallery:
     assert simulator_fig.title == expected_fig.title
     assert found_adjust_top == 1.2
 
-    # TODO: verify that the correct number of rows and columns are requested
-    # and that the axes are assigned to correspond with the exhibits.
+    assert found_nrows == 1
+    assert found_ncols == 1
