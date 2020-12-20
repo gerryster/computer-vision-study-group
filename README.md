@@ -10,6 +10,14 @@ Install the Python version specified in the .tool-versions file and then run:
 pip install -r requirements.txt
 ```
 
+### Testing
+
+From the root directory of this project, run:
+
+```bash
+pytest
+```
+
 ## Attribution
 
 The study group and this repository are based on "[Programming Computer Vision with Python](http://programmingcomputervision.com/)" by Jan Erik Solem (O'Reilly Media, 2012). The example-images directory is from that book and is included in this project for ease of reference and so that Git can notify me if I accidentally change any of the original images.

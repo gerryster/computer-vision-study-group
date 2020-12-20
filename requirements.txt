@@ -1,5 +1,6 @@
-Pillow
-numpy
-scipy
-matplotlib
 jupyterlab
+matplotlib
+numpy
+Pillow
+pytest
+scipy
