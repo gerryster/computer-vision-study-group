@@ -3,4 +3,5 @@ matplotlib
 numpy
 Pillow
 pytest
+pytest-watch
 scipy

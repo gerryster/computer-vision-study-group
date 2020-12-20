@@ -1,4 +1,5 @@
 import math
+import matplotlib
 import matplotlib.pyplot as plt
 
 """ Create a "gallery" of items in a specified number of rows using MatPlotLib.
@@ -13,32 +14,27 @@ class PlotGallery:
     self.exhibits.append(exhibit)
 
   def open(self):
-    # rcParams['figure.dpi'] = 300
+    # TODO: figure out a better way of modifying DPI:
+    dpi_orig = matplotlib.rcParams['figure.dpi']
+    matplotlib.rcParams['figure.dpi'] = 300
+
     fig, axes = plt.subplots(self.rows(), self.columns)
     fig.suptitle(self.title)
 
     # Reudce vertical space after the title. This is magic to me at this point.
     plt.subplots_adjust(top=1.2)
 
-    # ax1.set_title('Original', fontsize=8)
-    # ax1.imshow(im)
-    # ax1.axis('off')
+    for i in range(len(self.exhibits)):
+      axis = axes[i]
+      exhibit = self.exhibits[i]
 
-    # ax2.set_title('X Derivative', fontsize=8)
-    # ax2.imshow(Image.fromarray(abs(imx).round(0).astype(np.uint8)))
-    # ax2.axis('off')
-
-    # ax3.set_title('Y Derivative', fontsize=8)
-    # ax3.imshow(Image.fromarray(abs(imy).round(0).astype(np.uint8)))
-    # ax3.axis('off')
-
-    # ax4.set_title('Magnitude', fontsize=8)
-    # ax4.imshow(Image.fromarray(abs(magnitude).round(0).astype(np.uint8)))
-    # ax4.axis('off')
+      axis.set_title(exhibit.title, fontsize=8)
+      axis.imshow(exhibit.image)
+      axis.axis('off')
 
     plt.show()
 
-    # rcParams['figure.dpi'] = 72
+    matplotlib.rcParams['figure.dpi'] = dpi_orig
 
   def rows(self):
     return math.ceil(len(self.exhibits) / self.columns)
