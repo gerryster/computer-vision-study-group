@@ -2,8 +2,8 @@
 # https://stackoverflow.com/questions/61151/where-do-the-python-unit-tests-go
 #
 # TODO: put these classes both inside of a plot_gallery module:
-from lib import plot_gallery
-from lib import exhibit
+from lib.plot_gallery import PlotGallery
+from lib.plot_gallery import Exhibit
 
 import matplotlib.pyplot as plt
 
@@ -12,13 +12,13 @@ class TestPlotGallery:
     expected_title = 'test title'
     expected_columns = 2
 
-    subject = plot_gallery.PlotGallery(columns=2, title=expected_title)
+    subject = PlotGallery(columns=2, title=expected_title)
 
     assert subject.columns == expected_columns
     assert subject.title == expected_title
 
   def test_initialize_defaults_to_one_column(self):
-    subject = plot_gallery.PlotGallery(title='foo')
+    subject = PlotGallery(title='foo')
     assert subject.columns == 1
 
   # def test_that_columns_must_be_greater_than_0(self):
@@ -28,12 +28,6 @@ class TestPlotGallery:
     class FigureDouble:
       def suptitle(self, title):
         self.title = title
-
-      def __eq__(self, obj):
-        return isinstance(obj, FigureDouble) and obj.title == self.title
-
-      def __ne__(self, obj):
-        return not self == obj
 
     # Double of matplotlib.axes.Axes:
     class AxesDouble:
@@ -57,8 +51,8 @@ class TestPlotGallery:
     expected_fig.suptitle(gallery_title)
 
     fake_im = [[1,2],[3,4]]
-    my_exhibit = exhibit.Exhibit(fake_im, title = 'exhibit 1')
-    subject = plot_gallery.PlotGallery(gallery_title)
+    my_exhibit = Exhibit(fake_im, title = 'exhibit 1')
+    subject = PlotGallery(gallery_title)
     subject.add_exhibit(my_exhibit)
 
     simulator_fig = FigureDouble()

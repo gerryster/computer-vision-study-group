@@ -38,3 +38,10 @@ class PlotGallery:
 
   def rows(self):
     return math.ceil(len(self.exhibits) / self.columns)
+
+""" An item to display in a PlotGallery.
+"""
+class Exhibit:
+  def __init__(self, image, title):
+    self.image = image
+    self.title = title
