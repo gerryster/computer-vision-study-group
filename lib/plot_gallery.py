@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 """
 class PlotGallery:
   def __init__(self, title, columns=1):
+    if columns < 1: raise ValueError('columns can not be less than 1')
     self.columns = columns
     self.title = title
     self.exhibits = []

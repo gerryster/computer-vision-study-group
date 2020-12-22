@@ -1,11 +1,11 @@
 # This was helpful in understanding the project structure:
 # https://stackoverflow.com/questions/61151/where-do-the-python-unit-tests-go
 #
-# TODO: put these classes both inside of a plot_gallery module:
 from lib.plot_gallery import PlotGallery
 from lib.plot_gallery import Exhibit
 
 import matplotlib.pyplot as plt
+import pytest
 
 class TestPlotGallery:
   def test_initialize_with_params(self):
@@ -21,7 +21,12 @@ class TestPlotGallery:
     subject = PlotGallery(title='foo')
     assert subject.columns == 1
 
-  # def test_that_columns_must_be_greater_than_0(self):
+  def test_that_columns_must_be_greater_than_0(self):
+    with pytest.raises(ValueError):
+      PlotGallery(columns = 0, title = 'broken')
+
+    with pytest.raises(ValueError):
+      PlotGallery(columns = -1, title = 'broken')
 
   def test_opening_a_single_exhibit(self, monkeypatch):
     # Double of matplotlib.figure.Figure:
