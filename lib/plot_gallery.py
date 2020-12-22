@@ -2,9 +2,10 @@ import math
 import matplotlib
 import matplotlib.pyplot as plt
 
-""" Create a "gallery" of items in a specified number of rows using MatPlotLib.
-"""
 class PlotGallery:
+  """
+  Create a "gallery" of items in a specified number of rows using MatPlotLib.
+  """
   def __init__(self, title, columns=1):
     if columns < 1: raise ValueError('columns can not be less than 1')
     self.columns = columns
@@ -40,9 +41,10 @@ class PlotGallery:
   def rows(self):
     return math.ceil(len(self.exhibits) / self.columns)
 
-""" An item to display in a PlotGallery.
-"""
 class Exhibit:
+  """
+  An item to display in a PlotGallery.
+  """
   def __init__(self, image, title):
     self.image = image
     self.title = title
