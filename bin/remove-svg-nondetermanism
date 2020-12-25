@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# There is still more to go here but this is a start.
+echo 'removing timestamps'
+perl -i -pe 's#<dc:date>[^<]+</dc:date>#<dc:date/>#g' "$*"
+
+echo 'removing image tag IDs'
+perl -i -pe 's# id=\\"image\w+\\" # id =\\"image42\\" #g' "$*"
