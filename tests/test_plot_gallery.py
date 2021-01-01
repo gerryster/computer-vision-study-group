@@ -7,6 +7,27 @@ from lib.plot_gallery import Exhibit
 import matplotlib.pyplot as plt
 import pytest
 
+# Double of matplotlib.figure.Figure:
+class FigureDouble:
+  def suptitle(self, title):
+    self.title = title
+
+# Double of matplotlib.axes.Axes:
+class AxesDouble:
+  def __init__(self):
+    self.shown = False
+    self.axis_setting = None
+
+  def set_title(self, title, fontsize):
+    self.title = title
+    self.fontsize = fontsize
+
+  def imshow(self, image):
+    self.image = image
+    self.shown = True
+
+  def axis(self, setting):
+      self.axis_setting = setting
 class TestPlotGallery:
   def test_initialize_with_params(self):
     expected_title = 'test title'
@@ -28,39 +49,23 @@ class TestPlotGallery:
     with pytest.raises(ValueError):
       PlotGallery(columns = -1, title = 'broken')
 
-  def test_opening_a_single_exhibit(self, monkeypatch):
-    # Double of matplotlib.figure.Figure:
-    class FigureDouble:
-      def suptitle(self, title):
-        self.title = title
+  @pytest.fixture
+  def fake_image(self):
+    return [[1,2],[3,4]]
 
-    # Double of matplotlib.axes.Axes:
-    class AxesDouble:
-      def __init__(self):
-        self.shown = False
-        self.axis_setting = 'on'
+  @pytest.fixture
+  def simulator_fig(self):
+    return FigureDouble()
 
-      def set_title(self, title, fontsize):
-        self.title = title
-        self.fontsize = fontsize
-
-      def imshow(self, image):
-        self.image = image
-        self.shown = True
-
-      def axis(self, setting):
-        self.axis_setting = setting
-
+  def test_opening_a_single_exhibit(self, monkeypatch, fake_image, simulator_fig):
     gallery_title = 'test gallery'
     expected_fig = FigureDouble()
     expected_fig.suptitle(gallery_title)
 
-    fake_im = [[1,2],[3,4]]
-    my_exhibit = Exhibit(fake_im, title = 'exhibit 1')
+    my_exhibit = Exhibit(fake_image, title = 'exhibit 1')
     subject = PlotGallery(gallery_title)
     subject.add_exhibit(my_exhibit)
 
-    simulator_fig = FigureDouble()
     simulator_axes = []
     found_nrows = None
     found_ncols = None
@@ -108,3 +113,47 @@ class TestPlotGallery:
 
     assert found_axis.title == my_exhibit.title
     assert found_axis.__dict__ == expected_axis_state
+
+  def test_exhibits_can_opt_into_displaying_axes(self, monkeypatch, fake_image, simulator_fig):
+    simulator_axes = [AxesDouble(), AxesDouble()]
+    def mock_subplot(nrows, ncols):
+      return simulator_fig, simulator_axes
+    monkeypatch.setattr(plt, "subplots", mock_subplot)
+
+    def mock_subplots_adjust(top):
+      42
+    monkeypatch.setattr(plt, "subplots_adjust", mock_subplots_adjust)
+
+    axis_on_exhibit = Exhibit(fake_image, title = 'axis on', axis = 'on')
+    default_axis_exhibit = Exhibit(fake_image, title = 'default axis')
+
+    subject = PlotGallery(title = 'test')
+    subject.add_exhibit(axis_on_exhibit)
+    subject.add_exhibit(default_axis_exhibit)
+    subject.open()
+
+    assert simulator_axes[0].axis_setting == 'on'
+    assert simulator_axes[1].axis_setting == 'off'
+
+  def test_rendering_multiple_rows(self, monkeypatch, fake_image, simulator_fig):
+    simulator_axes = [
+      [AxesDouble(), AxesDouble()],
+      [AxesDouble(), AxesDouble()],
+    ]
+    def mock_subplot(nrows, ncols):
+      return simulator_fig, simulator_axes
+    monkeypatch.setattr(plt, "subplots", mock_subplot)
+
+    def mock_subplots_adjust(top):
+      42
+    monkeypatch.setattr(plt, "subplots_adjust", mock_subplots_adjust)
+
+    subject = PlotGallery(title = 'two rows', columns = 2)
+    subject.add_exhibit(Exhibit(fake_image, '1'))
+    subject.add_exhibit(Exhibit(fake_image, '2'))
+    subject.add_exhibit(Exhibit(fake_image, '3, on a second row'))
+    subject.open()
+
+    assert simulator_axes[0][0].title == '1'
+    assert simulator_axes[0][1].title == '2'
+    assert simulator_axes[1][0].title == '3, on a second row'

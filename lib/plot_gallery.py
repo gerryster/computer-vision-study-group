@@ -1,6 +1,8 @@
 import math
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy
+
 
 class PlotGallery:
   """
@@ -26,13 +28,7 @@ class PlotGallery:
     # Reudce vertical space after the title. This is magic to me at this point.
     plt.subplots_adjust(top=1.2)
 
-    for i in range(len(self.exhibits)):
-      axis = axes[i]
-      exhibit = self.exhibits[i]
-
-      axis.set_title(exhibit.title, fontsize=8)
-      axis.imshow(exhibit.image)
-      axis.axis('off')
+    self._plot_axes(axes)
 
     plt.show()
 
@@ -41,10 +37,25 @@ class PlotGallery:
   def rows(self):
     return math.ceil(len(self.exhibits) / self.columns)
 
+  def _plot_axes(self, axes):
+    # Flatten the potentially 2D array for ease of processing:
+    flat_axes = numpy.array(axes).flatten()
+
+    for i in range(len(self.exhibits)):
+      axis = flat_axes[i]
+      exhibit = self.exhibits[i]
+
+      axis.set_title(exhibit.title, fontsize=8)
+      axis.imshow(exhibit.image)
+      axis.axis(exhibit.axis)
+
+
+
 class Exhibit:
   """
   An item to display in a PlotGallery.
   """
-  def __init__(self, image, title):
+  def __init__(self, image, title, axis = 'off'):
+    self.axis = axis
     self.image = image
     self.title = title
