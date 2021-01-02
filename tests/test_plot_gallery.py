@@ -57,7 +57,14 @@ class TestPlotGallery:
   def simulator_fig(self):
     return FigureDouble()
 
-  def test_opening_a_single_exhibit(self, monkeypatch, fake_image, simulator_fig):
+  @pytest.fixture
+  def subplot_adjust_noop(self, monkeypatch):
+    def mock_subplots_adjust(top):
+      42
+    monkeypatch.setattr(plt, "subplots_adjust", mock_subplots_adjust)
+
+  def test_exhibit_attributes_are_passed_into_matplotlib_axes(
+    self, monkeypatch, fake_image, simulator_fig, subplot_adjust_noop):
     gallery_title = 'test gallery'
     expected_fig = FigureDouble()
     expected_fig.suptitle(gallery_title)
@@ -80,22 +87,11 @@ class TestPlotGallery:
 
       return simulator_fig, simulator_axes
 
-    found_adjust_top = None
-    def mock_subplots_adjust(top):
-      # Note that "nonlocal" is required here but not in the "simulator_fig"
-      # variable above since found_adjust_top is assigned. The behavior of
-      # assignment is more restrictive/safe.
-      nonlocal found_adjust_top
-      found_adjust_top = top
-
-    # Setup mocks:
     monkeypatch.setattr(plt, "subplots", mock_subplot)
-    monkeypatch.setattr(plt, "subplots_adjust", mock_subplots_adjust)
 
     subject.open()
 
     assert simulator_fig.title == expected_fig.title
-    assert found_adjust_top == 1.2
 
     assert found_nrows == 1
     assert found_ncols == 1
@@ -114,15 +110,12 @@ class TestPlotGallery:
     assert found_axis.title == my_exhibit.title
     assert found_axis.__dict__ == expected_axis_state
 
-  def test_exhibits_can_opt_into_displaying_axes(self, monkeypatch, fake_image, simulator_fig):
+  def test_exhibits_can_opt_into_displaying_axes(
+    self, monkeypatch, fake_image, simulator_fig, subplot_adjust_noop):
     simulator_axes = [AxesDouble(), AxesDouble()]
     def mock_subplot(nrows, ncols):
       return simulator_fig, simulator_axes
     monkeypatch.setattr(plt, "subplots", mock_subplot)
-
-    def mock_subplots_adjust(top):
-      42
-    monkeypatch.setattr(plt, "subplots_adjust", mock_subplots_adjust)
 
     axis_on_exhibit = Exhibit(fake_image, title = 'axis on', axis = 'on')
     default_axis_exhibit = Exhibit(fake_image, title = 'default axis')
@@ -135,7 +128,8 @@ class TestPlotGallery:
     assert simulator_axes[0].axis_setting == 'on'
     assert simulator_axes[1].axis_setting == 'off'
 
-  def test_rendering_multiple_rows(self, monkeypatch, fake_image, simulator_fig):
+  def test_rendering_multiple_rows(
+    self, monkeypatch, fake_image, simulator_fig, subplot_adjust_noop):
     simulator_axes = [
       [AxesDouble(), AxesDouble()],
       [AxesDouble(), AxesDouble()],
@@ -143,10 +137,6 @@ class TestPlotGallery:
     def mock_subplot(nrows, ncols):
       return simulator_fig, simulator_axes
     monkeypatch.setattr(plt, "subplots", mock_subplot)
-
-    def mock_subplots_adjust(top):
-      42
-    monkeypatch.setattr(plt, "subplots_adjust", mock_subplots_adjust)
 
     subject = PlotGallery(title = 'two rows', columns = 2)
     subject.add_exhibit(Exhibit(fake_image, '1'))
@@ -157,3 +147,45 @@ class TestPlotGallery:
     assert simulator_axes[0][0].title == '1'
     assert simulator_axes[0][1].title == '2'
     assert simulator_axes[1][0].title == '3, on a second row'
+
+  def test_rendering_one_row_adjusts_the_top_height(
+    self, monkeypatch, fake_image, simulator_fig):
+    def mock_subplot(nrows, ncols):
+      return simulator_fig, [AxesDouble()]
+    monkeypatch.setattr(plt, "subplots", mock_subplot)
+
+    found_adjust_top = None
+    def mock_subplots_adjust(
+      left=None, bottom=None, right=None, top=None, wspace=None, hspace=None):
+      # Note that "nonlocal" is required here but not in the "simulator_fig"
+      # variable above since found_adjust_top is assigned. The behavior of
+      # assignment is more restrictive/safe.
+      nonlocal found_adjust_top
+      found_adjust_top = top
+    monkeypatch.setattr(plt, "subplots_adjust", mock_subplots_adjust)
+
+    subject = PlotGallery(title = 'One Row', columns = 1)
+    subject.add_exhibit(Exhibit(fake_image, 'does not matter'))
+    subject.open()
+
+    assert found_adjust_top == 1.3
+
+  def test_rendering_multiple_rows_uses_no_top_height(
+    self, monkeypatch, fake_image, simulator_fig, subplot_adjust_noop):
+    def mock_subplot(nrows, ncols):
+      return simulator_fig, [AxesDouble(), AxesDouble()]
+    monkeypatch.setattr(plt, "subplots", mock_subplot)
+
+    found_adjust_top = None
+    def mock_subplots_adjust(
+      left=None, bottom=None, right=None, top=None, wspace=None, hspace=None):
+      nonlocal found_adjust_top
+      found_adjust_top = top
+    monkeypatch.setattr(plt, "subplots_adjust", mock_subplots_adjust)
+
+    subject = PlotGallery(title = 'Two Rows', columns = 1)
+    subject.add_exhibit(Exhibit(fake_image, 'on first row'))
+    subject.add_exhibit(Exhibit(fake_image, 'on second row'))
+    subject.open()
+
+    assert found_adjust_top == None

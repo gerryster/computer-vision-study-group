@@ -5,6 +5,8 @@ import numpy
 
 
 class PlotGallery:
+  _ONE_ROW_TOP_ADJUSTMENT_FACTOR = 1.3
+
   """
   Create a "gallery" of items in a specified number of rows using MatPlotLib.
   """
@@ -25,8 +27,7 @@ class PlotGallery:
     fig, axes = plt.subplots(self.rows(), self.columns)
     fig.suptitle(self.title)
 
-    # Reudce vertical space after the title. This is magic to me at this point.
-    plt.subplots_adjust(top=1.2)
+    self._adjust_subplot_height()
 
     self._plot_axes(axes)
 
@@ -36,6 +37,13 @@ class PlotGallery:
 
   def rows(self):
     return math.ceil(len(self.exhibits) / self.columns)
+
+  def _adjust_subplot_height(self):
+    # When there is only one row, MatPlotLib leaves too much white space
+    # between the title and the axes. This increases the size of the content in
+    # the one row case to minimize the whitespace.
+    top = None if self.rows() > 1 else PlotGallery._ONE_ROW_TOP_ADJUSTMENT_FACTOR
+    plt.subplots_adjust(top = top)
 
   def _plot_axes(self, axes):
     # Flatten the potentially 2D array for ease of processing:
@@ -48,8 +56,6 @@ class PlotGallery:
       axis.set_title(exhibit.title, fontsize=8)
       axis.imshow(exhibit.image)
       axis.axis(exhibit.axis)
-
-
 
 class Exhibit:
   """
