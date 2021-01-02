@@ -110,12 +110,18 @@ class TestPlotGallery:
     assert found_axis.title == my_exhibit.title
     assert found_axis.__dict__ == expected_axis_state
 
-  def test_exhibits_can_opt_into_displaying_axes(
-    self, monkeypatch, fake_image, simulator_fig, subplot_adjust_noop):
-    simulator_axes = [AxesDouble(), AxesDouble()]
+  def subplot_forward_simulator_axes(self, monkeypatch, simulator_axes):
+    """
+    Monkey patch plot.subplots to return the passed in simulator_axes
+    """
     def mock_subplot(nrows, ncols):
-      return simulator_fig, simulator_axes
+      return FigureDouble(), simulator_axes
+
     monkeypatch.setattr(plt, "subplots", mock_subplot)
+
+  def test_exhibits_can_opt_into_displaying_axes(self, fake_image, monkeypatch, subplot_adjust_noop):
+    simulator_axes = [AxesDouble(), AxesDouble()]
+    self.subplot_forward_simulator_axes(monkeypatch, simulator_axes)
 
     axis_on_exhibit = Exhibit(fake_image, title = 'axis on', axis = 'on')
     default_axis_exhibit = Exhibit(fake_image, title = 'default axis')
@@ -134,9 +140,7 @@ class TestPlotGallery:
       [AxesDouble(), AxesDouble()],
       [AxesDouble(), AxesDouble()],
     ]
-    def mock_subplot(nrows, ncols):
-      return simulator_fig, simulator_axes
-    monkeypatch.setattr(plt, "subplots", mock_subplot)
+    self.subplot_forward_simulator_axes(monkeypatch, simulator_axes)
 
     subject = PlotGallery(title = 'two rows', columns = 2)
     subject.add_exhibit(Exhibit(fake_image, '1'))
@@ -150,9 +154,7 @@ class TestPlotGallery:
 
   def test_rendering_one_row_adjusts_the_top_height(
     self, monkeypatch, fake_image, simulator_fig):
-    def mock_subplot(nrows, ncols):
-      return simulator_fig, [AxesDouble()]
-    monkeypatch.setattr(plt, "subplots", mock_subplot)
+    self.subplot_forward_simulator_axes(monkeypatch, [AxesDouble()])
 
     found_adjust_top = None
     def mock_subplots_adjust(
@@ -172,9 +174,7 @@ class TestPlotGallery:
 
   def test_rendering_multiple_rows_uses_no_top_height(
     self, monkeypatch, fake_image, simulator_fig, subplot_adjust_noop):
-    def mock_subplot(nrows, ncols):
-      return simulator_fig, [AxesDouble(), AxesDouble()]
-    monkeypatch.setattr(plt, "subplots", mock_subplot)
+    self.subplot_forward_simulator_axes(monkeypatch, [AxesDouble(), AxesDouble()])
 
     found_adjust_top = None
     def mock_subplots_adjust(
