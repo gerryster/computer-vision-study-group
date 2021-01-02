@@ -10,10 +10,11 @@ class PlotGallery:
   """
   Create a "gallery" of items in a specified number of rows using MatPlotLib.
   """
-  def __init__(self, title, columns=1):
+  def __init__(self, title, columns=1, dpi = 72):
     if columns < 1: raise ValueError('columns can not be less than 1')
     self.columns = columns
     self.title = title
+    self.dpi = dpi
     self.exhibits = []
 
   def add_exhibit(self, exhibit):
@@ -22,7 +23,7 @@ class PlotGallery:
   def open(self):
     # TODO: figure out a better way of modifying DPI:
     dpi_orig = matplotlib.rcParams['figure.dpi']
-    matplotlib.rcParams['figure.dpi'] = 300
+    matplotlib.rcParams['figure.dpi'] = self.dpi
 
     fig, axes = plt.subplots(self.rows(), self.columns)
     fig.suptitle(self.title)
@@ -42,6 +43,10 @@ class PlotGallery:
     # When there is only one row, MatPlotLib leaves too much white space
     # between the title and the axes. This increases the size of the content in
     # the one row case to minimize the whitespace.
+
+    # NOTE: this logic is problematic as it only makes sense for a square
+    # image. Images which are more tall result in the title being displayed
+    # inside the image when there is one rwo.
     top = None if self.rows() > 1 else PlotGallery._ONE_ROW_TOP_ADJUSTMENT_FACTOR
     plt.subplots_adjust(top = top)
 
@@ -57,11 +62,15 @@ class PlotGallery:
       axis.imshow(exhibit.image)
       axis.axis(exhibit.axis)
 
+      if exhibit.transform:
+        exhibit.transform(axis, exhibit)
+
 class Exhibit:
   """
   An item to display in a PlotGallery.
   """
-  def __init__(self, image, title, axis = 'off'):
+  def __init__(self, image, title, axis = 'off', transform = None):
     self.axis = axis
     self.image = image
     self.title = title
+    self.transform = transform
