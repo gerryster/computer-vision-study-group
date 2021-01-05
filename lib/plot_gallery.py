@@ -10,8 +10,8 @@ class PlotGallery:
   """
   Create a "gallery" of items in a specified number of rows using MatPlotLib.
   """
-  def __init__(self, title, columns=1, dpi = 72):
-    if columns < 1: raise ValueError('columns can not be less than 1')
+  def __init__(self, title, columns=0, dpi=72):
+    if columns < 0: raise ValueError('columns can not be less than 0')
     self.columns = columns
     self.title = title
     self.dpi = dpi
@@ -25,7 +25,7 @@ class PlotGallery:
     dpi_orig = matplotlib.rcParams['figure.dpi']
     matplotlib.rcParams['figure.dpi'] = self.dpi
 
-    fig, axes = plt.subplots(self.rows(), self.columns)
+    fig, axes = plt.subplots(self.num_rows(), self.num_columns())
     fig.suptitle(self.title)
 
     self._adjust_subplot_height()
@@ -36,8 +36,11 @@ class PlotGallery:
 
     matplotlib.rcParams['figure.dpi'] = dpi_orig
 
-  def rows(self):
-    return math.ceil(len(self.exhibits) / self.columns)
+  def num_rows(self):
+    return math.ceil(len(self.exhibits) / self.num_columns())
+
+  def num_columns(self):
+    return self.columns if self.columns else len(self.exhibits)
 
   def _adjust_subplot_height(self):
     # When there is only one row, MatPlotLib leaves too much white space
@@ -47,7 +50,7 @@ class PlotGallery:
     # NOTE: this logic is problematic as it only makes sense for a square
     # image. Images which are more tall result in the title being displayed
     # inside the image when there is one rwo.
-    top = None if self.rows() > 1 else PlotGallery._ONE_ROW_TOP_ADJUSTMENT_FACTOR
+    top = None if self.num_rows() > 1 else PlotGallery._ONE_ROW_TOP_ADJUSTMENT_FACTOR
     plt.subplots_adjust(top = top)
 
   def _plot_axes(self, axes):

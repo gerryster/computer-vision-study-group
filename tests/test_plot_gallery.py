@@ -38,14 +38,11 @@ class TestPlotGallery:
     assert subject.columns == expected_columns
     assert subject.title == expected_title
 
-  def test_initialize_defaults_to_one_column(self):
+  def test_initialize_defaults_to_zero_columns(self):
     subject = PlotGallery(title='foo')
-    assert subject.columns == 1
+    assert subject.columns == 0
 
   def test_that_columns_must_be_greater_than_0(self):
-    with pytest.raises(ValueError):
-      PlotGallery(columns = 0, title = 'broken')
-
     with pytest.raises(ValueError):
       PlotGallery(columns = -1, title = 'broken')
 
