@@ -10,12 +10,13 @@ class PlotGallery:
   """
   Create a "gallery" of items in a specified number of rows using MatPlotLib.
   """
-  def __init__(self, title, columns=0, dpi=72):
+  def __init__(self, title, columns=0, dpi=72, figsize = None):
     if columns < 0: raise ValueError('columns can not be less than 0')
     self.columns = columns
     self.title = title
     self.dpi = dpi
     self.exhibits = []
+    self.figsize = figsize
 
   def add_exhibit(self, exhibit):
     self.exhibits.append(exhibit)
@@ -25,7 +26,7 @@ class PlotGallery:
     dpi_orig = matplotlib.rcParams['figure.dpi']
     matplotlib.rcParams['figure.dpi'] = self.dpi
 
-    fig, axes = plt.subplots(self.num_rows(), self.num_columns())
+    fig, axes = plt.subplots(self.num_rows(), self.num_columns(), figsize = self.figsize)
     fig.suptitle(self.title)
 
     self._adjust_subplot_height()

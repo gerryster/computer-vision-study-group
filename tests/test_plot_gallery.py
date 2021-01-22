@@ -73,7 +73,7 @@ class TestPlotGallery:
     simulator_axes = []
     found_nrows = None
     found_ncols = None
-    def mock_subplot(nrows, ncols):
+    def mock_subplot(nrows, ncols, figsize = None):
       nonlocal found_nrows
       nonlocal found_ncols
       found_nrows = nrows
@@ -111,7 +111,7 @@ class TestPlotGallery:
     """
     Monkey patch plot.subplots to return the passed in simulator_axes
     """
-    def mock_subplot(nrows, ncols):
+    def mock_subplot(nrows, ncols, figsize = None):
       return FigureDouble(), simulator_axes
 
     monkeypatch.setattr(plt, "subplots", mock_subplot)
